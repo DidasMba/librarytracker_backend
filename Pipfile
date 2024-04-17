@@ -10,6 +10,8 @@ flask-migrate = "*"
 flask-cors = "*"
 python-dotenv = "*"
 flask-restful = "*"
+sqlalchemy-serializer = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 

@@ -13,6 +13,7 @@ def create_app():
 app=create_app()
 CORS(app)
 Migrate(app,db)
+db.init_app(app)
 api=Api(app)
 
 
