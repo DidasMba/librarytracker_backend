@@ -13,7 +13,7 @@ def create_app():
     return app
 
 app=create_app()
-CORS(app)
+CORS(app, supports_credentials=True, allow_headers=["*"], methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"])
 Migrate(app,db)
 bcrypt=Bcrypt(app)
 jwt=JWTManager(app)
@@ -38,11 +38,12 @@ class Register(Resource):
     
     def post(self):
         data=request.get_json()
+        print(data)
         password=data['password']
         email=data['email']
-        name=data['name']
-        hashed_password=bcrypt.generate_password_hash(password).decode('utf8')
-        data['password']=hashed_password
+        name=data['fullname']
+        hashed_password=bcrypt.generate_password_hash(password).decode('utf-8')
+        data['Password']=hashed_password
 
         user_exists=User.query.filter_by(email=email).first()
         if user_exists:
@@ -50,7 +51,7 @@ class Register(Resource):
             return response
 
 
-        new_user=User(**data)
+        new_user=User(name=name,email=email,password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
         return make_response(jsonify({"message":f"user {name} has been registered successfully"}),201)
@@ -81,6 +82,12 @@ class Login(Resource):
 
 api.add_resource(Login,'/login')
 
+@app.after_request
+def after_request(response):
+    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    response.headers['Access-Control-Allow-Headers']='Content-Type,Authorization'
+    response.headers['Access-Control-Allow-Methods']='GET,POST,PUT,DELETE,OPTIONS,PATCH'
+    return response
 
 if __name__=='__main__':
     app.run(port=5000,debug=True)
