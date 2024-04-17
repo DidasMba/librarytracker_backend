@@ -12,6 +12,9 @@ python-dotenv = "*"
 flask-restful = "*"
 sqlalchemy-serializer = "*"
 sqlalchemy = "*"
+flask-bcrypt = "*"
+flask-jwt-extended = "*"
+flask-session = "*"
 
 [dev-packages]
 
