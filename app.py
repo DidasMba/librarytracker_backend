@@ -7,36 +7,64 @@ from flask_migrate import Migrate
 from config import ApplicationConfig
 from models import db,User
 
+# Create a Flask application factory where I can intansitate  many flask applications
 def create_app():
     app=Flask(__name__)
     app.config.from_object(ApplicationConfig)
     return app
 
 app=create_app()
+
+
+# Enable Cross-Origin Resource Sharing (CORS)
+# **IMPORTANT**
+# This should be extented during **DEPLOYMENT** 
+# Failure all call CORS with the frontend application will be blocked
+CORS(app)
+
+# Initialize Flask-Migrate for database migrations
+
 CORS(app, supports_credentials=True, allow_headers=["*"], methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"])
+
 Migrate(app,db)
+
+# Initialize Flask-Bcrypt for password hashing
 bcrypt=Bcrypt(app)
+
+# Initialize Flask-JWT-Extended for JWT authentication
 jwt=JWTManager(app)
+
+# Initialize the database connection
 db.init_app(app)
+
+# Initialize Flask-RESTful for creating API resources
 api=Api(app)
 
-
+# Create a welcome message resource
 class Index(Resource):
     def get(self):
         return {"message":"Welcome to my API"}
     
 api.add_resource(Index,'/')
 
-
-# Endpoint to 
+# Create a user registration resource
 class Register(Resource):
     def get(self):
+        """
+        Retrieve a list of all registered users.
+        If no users are found, return an error message.
+        """
         users=[user.to_dict() for user in User.query.all()]
         if not users:
             return make_response(jsonify({"error":"No users"}),400)
         return make_response(jsonify(users),200)
-    
+
     def post(self):
+        """
+        Register a new user with the provided name, email, and password.
+        Hash the password before storing it in the database.
+        If a user with the same email already exists, return an error message.
+        """
         data=request.get_json()
         print(data)
         password=data['password']
@@ -51,15 +79,27 @@ class Register(Resource):
             return response
 
 
+        new_user=User(**data)
+
+
         new_user=User(name=name,email=email,password=hashed_password)
+
         db.session.add(new_user)
         db.session.commit()
         return make_response(jsonify({"message":f"user {name} has been registered successfully"}),201)
 
 api.add_resource(Register, '/register')
 
+# Create a user login resource
 class Login(Resource):
     def post(self):
+        """
+        Log in a user with the provided email and password.
+        If the user does not exist, return an error message.
+        If the password is incorrect, return an error message.
+        If the login is successful, generate access and refresh tokens,
+        store the user ID in the session, and return the tokens.
+        """
         data=request.get_json()
         email=data['email']
         password=data['password']
@@ -82,12 +122,16 @@ class Login(Resource):
 
 api.add_resource(Login,'/login')
 
+
+# Run the Flask application
+
 @app.after_request
 def after_request(response):
     response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     response.headers['Access-Control-Allow-Headers']='Content-Type,Authorization'
     response.headers['Access-Control-Allow-Methods']='GET,POST,PUT,DELETE,OPTIONS,PATCH'
     return response
+
 
 if __name__=='__main__':
     app.run(port=5000,debug=True)
