@@ -15,6 +15,7 @@ def create_app():
 
 app=create_app()
 
+
 # Enable Cross-Origin Resource Sharing (CORS)
 # **IMPORTANT**
 # This should be extented during **DEPLOYMENT** 
@@ -22,6 +23,9 @@ app=create_app()
 CORS(app)
 
 # Initialize Flask-Migrate for database migrations
+
+CORS(app, supports_credentials=True, allow_headers=["*"], methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"])
+
 Migrate(app,db)
 
 # Initialize Flask-Bcrypt for password hashing
@@ -62,18 +66,24 @@ class Register(Resource):
         If a user with the same email already exists, return an error message.
         """
         data=request.get_json()
+        print(data)
         password=data['password']
         email=data['email']
-        name=data['name']
-        hashed_password=bcrypt.generate_password_hash(password).decode('utf8')
-        data['password']=hashed_password
+        name=data['fullname']
+        hashed_password=bcrypt.generate_password_hash(password).decode('utf-8')
+        data['Password']=hashed_password
 
         user_exists=User.query.filter_by(email=email).first()
         if user_exists:
             response = make_response(jsonify({"error": f"user with email {email} already exists"}), 401)
             return response
 
+
         new_user=User(**data)
+
+
+        new_user=User(name=name,email=email,password=hashed_password)
+
         db.session.add(new_user)
         db.session.commit()
         return make_response(jsonify({"message":f"user {name} has been registered successfully"}),201)
@@ -112,6 +122,16 @@ class Login(Resource):
 
 api.add_resource(Login,'/login')
 
+
 # Run the Flask application
+
+@app.after_request
+def after_request(response):
+    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    response.headers['Access-Control-Allow-Headers']='Content-Type,Authorization'
+    response.headers['Access-Control-Allow-Methods']='GET,POST,PUT,DELETE,OPTIONS,PATCH'
+    return response
+
+
 if __name__=='__main__':
     app.run(port=5000,debug=True)
