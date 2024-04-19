@@ -1,7 +1,8 @@
 
 ## Detailed Endpoint Documentation:
+All the react endpoints preceed after the flask local port,which in this case is 5000 **http://localhost:5000/${endpoint}**
 ### Welcome Message Endpoint (/):
-- GET:
+#### GET:
 - Description: Retrieves a welcome message.
 - Response:
     - Status Code: 200 OK
@@ -10,8 +11,8 @@
     { "message": "Welcome to my API" }
     ```
      
-### User Registration Endpoint (/register):
-- POST:
+### User Registration Endpoint=/register:
+#### POST:
 - Description: Registers a new user with provided details.
 - Request Body:
      ```bash
@@ -36,7 +37,7 @@
         { "error": "User with email [email] already exists" } (if user already exists)
         ```
         
-- GET:
+#### GET:
 - Description: Retrieves a list of all registered users.
 - Response:
     - Status Code:
@@ -46,8 +47,8 @@
         ```bash
         List of user objects, each containing user details (id, name, email).
         ```
-### User Login Endpoint (/login):
-- POST:
+### User Login Endpoint=/login:
+#### POST:
 - Description: Logs in a user with provided credentials.
 - Request Body:
     - email (string): User's email address.

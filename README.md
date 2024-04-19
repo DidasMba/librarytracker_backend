@@ -43,4 +43,4 @@ flask db upgrade.
 ```
 
 
-For detailed documentation on API endpoints and usage, refer to the [API Documentation]().
+For detailed documentation on API endpoints and usage, refer to the [API Documentation](./APIDOC/README.md).
